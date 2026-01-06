@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.env
+.env.*
+*.egg-info/
+.dist/
+build/
+dist/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+coverage.xml
+htmlcov/
+
+# Editors & OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Data & logs
+data/
+logs/
+artifacts/
+
+# Local configs
+gads_etl_local.yaml
+config/local/

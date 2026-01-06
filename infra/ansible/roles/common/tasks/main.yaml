@@ -1,0 +1,23 @@
+---
+- name: Ensure project directories exist
+  file:
+    path: "{{ project_root }}"
+    state: directory
+    owner: "{{ app_user | default('etl') }}"
+    mode: "0755"
+
+- name: Install base packages
+  package:
+    name:
+      - git
+      - python3
+      - python3-venv
+      - rsync
+    state: present
+
+- name: Drop environment file placeholder
+  copy:
+    dest: "{{ env_file }}"
+    content: "# populate from Vault or CI before deploy\n"
+    owner: root
+    mode: "0600"

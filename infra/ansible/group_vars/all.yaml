@@ -1,0 +1,6 @@
+---
+ansible_python_interpreter: /usr/bin/python3
+project_root: /opt/gads-etl
+python_version: "3.12"
+containers_enabled: false
+env_file: "/etc/gads-etl/.env"

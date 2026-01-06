@@ -1,0 +1,8 @@
+---
+- name: Prepare ETL hosts
+  hosts: etl
+  become: true
+  vars:
+    app_user: etl
+  roles:
+    - role: common

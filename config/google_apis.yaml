@@ -1,0 +1,52 @@
+metadata:
+  dataset_timezone: ${DATASET_TIMEZONE:-UTC}
+  default_currency: USD
+  catch_up_window_days: 35
+  lookback_days_daily: 2
+
+storage:
+  warehouse_uri: ${WAREHOUSE_URI}
+  lake_bucket: ${DATA_LAKE_BUCKET}
+  state_store_table: ${STATE_STORE_TABLE}
+
+extractors:
+  google_ads:
+    api_version: ${GOOGLE_ADS_API_VERSION}
+    login_customer_id: ${GOOGLE_ADS_LOGIN_CUSTOMER_ID}
+    manager_account_id: ${GOOGLE_ADS_MANAGER_ACCOUNT_ID}
+    customer_ids: ${GOOGLE_ADS_CUSTOMER_IDS}
+    ads_resource_queries:
+      - name: campaign_daily_performance
+        entity: campaign
+        date_column: segments.date
+        fields:
+          - campaign.id
+          - campaign.name
+          - segments.date
+          - metrics.impressions
+          - metrics.clicks
+          - metrics.conversions
+          - metrics.cost_micros
+      - name: ad_group_conversion
+        entity: ad_group
+        date_column: segments.date
+        fields:
+          - ad_group.id
+          - ad_group.name
+          - campaign.id
+          - segments.device
+          - metrics.value_per_conversion
+          - metrics.conversions
+          - metrics.cost_micros
+    incremental_keys:
+      campaign_daily_performance: segments.date
+      ad_group_conversion: segments.date
+  google_merchant:
+    enabled: false
+    resource: product_status
+    api_version: v2.1
+    merchant_id: ${GOOGLE_MERCHANT_ACCOUNT_ID}
+    schedules:
+      - name: catalog_sync
+        frequency: daily
+        chunk_size: 1000
