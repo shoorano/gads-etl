@@ -66,6 +66,5 @@ Additional metadata (e.g., orchestrator identifiers) may be appended but must no
 
 ### 10. Non-goals
 - Automating schema-version bumps or run_id assignment is out of scope for this contract; execution tooling handles those concerns.
-- The contract does not define warehouse loaders, state store implementations, or downstream reconciliation logic.
+- The contract does not define warehouse consumers (loaders), state store implementations, or downstream reconciliation logic.
 - No guarantees are made about compression, encryption, or retention policies; those are deployment decisions layered on top of this contract.
-

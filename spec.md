@@ -44,7 +44,7 @@ The long-term intent is to run reliably on lean infrastructure (Hetzner-sized ho
 
 ## Roadmap
 1. Add deterministic batching and state tracking (per-query offsets).
-2. Layer in warehouse loaders with idempotent upsert semantics.
+2. Layer in warehouse consumers (loaders) with idempotent upsert semantics.
 3. Introduce configurable retry/backoff and partial-failure visibility.
 4. Harden concurrency via file locking or partitioned outputs.
 

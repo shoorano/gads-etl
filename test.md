@@ -25,5 +25,5 @@
 
 ## Checklist for new components
 - **State store**: add unit tests for schema migrations/ORM models plus integration tests that spin up a disposable DB and verify checkpoint read/write semantics.
-- **Warehouse loader**: cover transformation logic with unit tests (pure functions) and add integration tests that ingest sample raw files into a temporary warehouse, asserting idempotent behavior.
+- **Warehouse consumer (loader)**: cover transformation logic with unit tests (pure functions) and add integration tests that ingest sample raw files into a temporary warehouse, asserting idempotent behavior.
 - **Orchestrator hooks**: unit-test scheduling logic (cron parsing, CLI args) and integration-test end-to-end runs via the orchestrator’s local runner if feasible.

@@ -50,5 +50,5 @@
 
 ### 2026-01-06 — Status: Accepted
 **Context**: Extractors and consumers must stay decoupled via state.  
-**Decision**: Only loaders/validators write state records; consumers MUST read state and may only consume partitions marked `success`.  
+**Decision**: Only validators write state records; consumers MUST read state and may only consume partitions marked `success`.  
 **Consequences**: Extractors remain stateless; consumers cannot skip state checks even if raw files exist.

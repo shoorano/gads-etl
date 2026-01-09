@@ -1,7 +1,7 @@
 ## State store contract
 
 ### 1. Definitions
-- **State store** – A durable coordination ledger that records the processing status of each logical partition of Google Ads data. It is separate from raw sinks and warehouse loaders and exists solely to answer “is this partition safe to consume?”.
+- **State store** – A durable coordination ledger that records the processing status of each logical partition of Google Ads data. It is separate from raw sinks and warehouse consumers (warehouse loaders) and exists solely to answer “is this partition safe to consume?”.
 - **State record (`PartitionState`)** – A single row describing the status of one logical partition plus the metadata required to identify which raw partition (`run_id`) is authoritative.
 - **Logical partition key** – The tuple `(source, customer_id, query_name, logical_date)` describing the smallest independent slice of work for this pipeline.
 
@@ -15,8 +15,8 @@
 
 ### 3. Status model
 - `pending` – No trustworthy data exists yet for the partition. This includes keys with no row (implicit pending) or records explicitly set to pending.
-- `success` – The loader/validator has inspected a raw partition and declared the referenced `run_id` safe for downstream consumption.
-- `failed` – The loader/validator inspected a raw partition and found it invalid (bad payload, schema mismatch, business rule violation). Consumers must not read failed partitions.
+- `success` – The validator has inspected a raw partition and declared the referenced `run_id` safe for downstream consumption.
+- `failed` – The validator inspected a raw partition and found it invalid (bad payload, schema mismatch, business rule violation). Consumers must not read failed partitions.
 
 `failed` indicates that at least one run attempt was executed and rejected. Logical partitions with no attempts and no state row remain implicitly `pending`.
 
@@ -28,8 +28,8 @@ Statuses are about consumer safety, not extractor progress. They attach to logic
 - Multiple `run_id`s may exist for the same logical partition; only the one referenced by the state record is considered trusted.
 
 ### 5. State lifecycle (write-side)
-1. **Creation (lazy)** – No row exists until a loader/validator touches the partition. Missing rows imply `pending`.
-2. **Writers** – Only loaders/validators (and tightly-scoped operational tooling) insert or update state. Extractors never write state.
+1. **Creation (lazy)** – No row exists until a validator touches the partition. Missing rows imply `pending`.
+2. **Writers** – Only validators (and tightly-scoped operational tooling) insert or update state. Extractors never write state.
 3. **Transitions**:
    - When processing starts, the writer may insert a record (optional) or simply continue with implicit pending.
    - On success, writers must upsert a record with `status=success`, `current_run_id` referencing the validated raw partition, and metadata such as `schema_version`, `record_count`, `updated_at`.
@@ -38,7 +38,7 @@ Statuses are about consumer safety, not extractor progress. They attach to logic
 
 ### 6. Consumer contract (read-side)
 - Consumers MUST query the state store before reading raw data.
-- Only partitions with `status=success` are safe to ingest. Missing rows or `pending` status indicate incomplete work; consumers must wait or rerun loaders.
+- Only partitions with `status=success` are safe to ingest. Missing rows or `pending` status indicate incomplete work; consumers must wait or trigger validators to reprocess the partition.
 - For backfills or new customers, large date ranges will appear as implicit `pending`. Consumers should treat missing rows as “not ready” even if raw files exist.
 - When a partition is reprocessed, consumers rely on `current_run_id` to know which raw directory to read; past run_ids remain immutable but may be obsolete.
 
@@ -66,10 +66,10 @@ PartitionState(
 - `attempt_count` (optional) can track how many run_ids were evaluated.
 
 ### 8. Examples
-1. **New customer signup** – The orchestrator schedules dates for the new customer. Initially, the state store has no rows for those keys → implicit `pending`. Once loaders validate each day, they insert rows with `status=success`.
-2. **Partial success across customers** – Customer A’s partitions reach `success`, while Customer B’s remain `pending` because loaders haven’t processed them yet. Consumers reading customer B’s data must wait despite raw files existing, because state is not `success`.
-3. **Retry failed partitions** – Suppose `2024-06-01` for customer A failed due to schema mismatch. The state row shows `status=failed`, `current_run_id` pointing to the problematic run, and an error message. After fixing the issue and reprocessing, the loader updates `current_run_id` to the new run and sets `status=success`.
-4. **Reprocessing updates run_id** – When backfilling `2024-05-15`, the loader chooses a new `run_id`. The state row (which previously referenced the old run) is updated to point to the new run_id and timestamp. Raw data from the old run remains in storage but is no longer authoritative.
+1. **New customer signup** – The orchestrator schedules dates for the new customer. Initially, the state store has no rows for those keys → implicit `pending`. Once validators review each day, they insert rows with `status=success`.
+2. **Partial success across customers** – Customer A’s partitions reach `success`, while Customer B’s remain `pending` because validators haven’t processed them yet. Consumers reading customer B’s data must wait despite raw files existing, because state is not `success`.
+3. **Retry failed partitions** – Suppose `2024-06-01` for customer A failed due to schema mismatch. The state row shows `status=failed`, `current_run_id` pointing to the problematic run, and an error message. After fixing the issue and reprocessing, the validator updates `current_run_id` to the new run and sets `status=success`.
+4. **Reprocessing updates run_id** – When backfilling `2024-05-15`, the validator chooses a new `run_id`. The state row (which previously referenced the old run) is updated to point to the new run_id and timestamp. Raw data from the old run remains in storage but is no longer authoritative.
 
 ### 9. Non-goals
 - The state store is not a data sink; it does not store raw payloads or aggregates.

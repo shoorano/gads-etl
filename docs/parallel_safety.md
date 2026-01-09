@@ -22,14 +22,14 @@ Parallel safety means the pipeline preserves correctness under retries, partial 
 ### 5. Required changes (conceptual)
 1. Replace ad-hoc filesystem writers with the RawSink interface so all writes are run-scoped and backend-agnostic.
 2. Centralize run_id generation in the pipeline runner/orchestrator to ensure every attempt has a unique identifier applied consistently across sink, metadata, and state.
-3. Move success/failure semantics to loaders/validators that interact with the state store instead of relying on extractor-side heuristics.
+3. Move success/failure semantics to validators that interact with the state store instead of relying on extractor-side heuristics.
 4. Drive retries and reprocessing based on the state store (which partitions are pending/failed) rather than re-running entire date ranges blindly.
 
 ### 6. Ordering of changes
 1. **Introduce RawSink abstraction** (code-level plumbing) and adopt it in extractors so raw writes are fenced by `(partition_key, run_id)`.
 2. **Adopt immutable partition layout** per `docs/raw_sink_contract.md`, ensuring run directories are unique and finalization writes metadata.
-3. **Implement the state store contract** for loaders/validators, recording `status` and `current_run_id` for each partition.
-4. **Wire pipeline flow through state**: extractors produce raw partitions; loaders reference state to mark success/failure; retries query state for pending/failed partitions.
+3. **Implement the state store contract** for validators, recording `status` and `current_run_id` for each partition.
+4. **Wire pipeline flow through state**: extractors produce raw partitions; validators reference state to mark success/failure; retries query state for pending/failed partitions.
 
 Parallelism must not be enabled before this sequence completes. Running multiple workers without run fencing or a state store risks overwriting partitions and exposing consumers to incorrect data.
 
@@ -37,4 +37,4 @@ Parallelism must not be enabled before this sequence completes. Running multiple
 - Performance tuning or throughput improvements.
 - Introducing concurrency primitives (threads, async, pools).
 - Defining scheduling/orchestration logic.
-- Implementation details of sinks, state stores, or loaders beyond the invariants above.
+- Implementation details of sinks, state stores, or validators beyond the invariants above.

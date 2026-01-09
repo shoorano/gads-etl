@@ -43,7 +43,7 @@
 
 ### 7. Environment switching
 - Backend selection is configuration-driven (e.g., YAML/env). No application code may branch on “filesystem vs object storage”.
-- Extractors, loaders, and consumers interact solely through the RawSink interface. Switching from local filesystem to S3-compatible storage is a config change only.
+- Extractors, validators, and consumers interact solely through the RawSink interface. Switching from local filesystem to S3-compatible storage is a config change only.
 - This invariance is architectural: any violation (e.g., direct filesystem calls) is considered a bug irrespective of environment.
 
 ### 8. Backend examples (conceptual)
@@ -56,4 +56,3 @@
 - State store interaction (status tracking, run selection, retries).
 - Retry/backoff logic or orchestration concerns.
 - Deciding which partition is authoritative (`state_store_contract.md` defines that).
-
