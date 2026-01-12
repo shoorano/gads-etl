@@ -12,7 +12,7 @@ from google.ads.googleads.client import GoogleAdsClient
 from .config import ConfigLoader, PipelineConfig, QueryDefinition
 from .google_ads_client import load_google_ads_client
 from .raw_sink import PartitionKey, RawSink
-from .raw_sink_local import LocalFilesystemRawSink
+from .raw_sink_factory import create_raw_sink
 from .run_context import RunContext
 
 logger = logging.getLogger(__name__)
@@ -147,7 +147,7 @@ class PipelineRunner:
         self.config = self.config_loader.model
         self.run_context = run_context or RunContext.create()
         self.google_ads_client = self._build_google_ads_client()
-        self.raw_sink = LocalFilesystemRawSink()
+        self.raw_sink = create_raw_sink()
         self.extractor = GoogleAdsExtractor(
             self.google_ads_client,
             self.config,
