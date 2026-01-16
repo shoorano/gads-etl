@@ -37,6 +37,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["gads_etl*"]
 
 [tool.pytest.ini_options]
 addopts = "-ra -m 'not integration'"
@@ -46,5 +47,4 @@ markers = [
     "minio: tests that require a running MinIO instance",
 ]
 pythonpath = [
-    "src",
 ]

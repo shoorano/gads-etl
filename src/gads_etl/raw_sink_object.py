@@ -159,4 +159,3 @@ class S3PartitionReader(PartitionReader):
     def read_metadata(self) -> Mapping[str, object]:
         obj = self.client.get_object(Bucket=self.bucket, Key=self.metadata_key)
         return json.loads(obj["Body"].read().decode("utf-8"))
-*** End of File

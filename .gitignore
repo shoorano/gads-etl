@@ -33,3 +33,6 @@ artifacts/
 # Local configs
 gads_etl_local.yaml
 config/local/
+
+# Misc
+current-diff.txt

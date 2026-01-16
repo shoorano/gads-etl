@@ -40,7 +40,12 @@ Production-ready template for extracting Google Ads (and eventually Google Merch
 
 Use the helper script to produce OAuth refresh tokens and persist them into your `.env` (or `.env.test`) file:
 ```bash
-uv run python scripts/generate_refresh_token.py --env-file .env
+# create venv once
+uv venv
+source .venv/bin/activate
+pip install -e .
+# now run helper
+python scripts/generate_refresh_token.py --env-file .env
 ```
 
 Before running the script, create an OAuth client of type **Desktop app** (Installed application) in Google Cloud Console. Desktop clients automatically support loopback redirects, so you only need to add `http://localhost` and `http://localhost:8080/` to the authorized redirect URIs once. If you are reusing a Web application client, double check that those exact redirect URIs exist and give the settings a few minutes to propagate.
@@ -72,8 +77,8 @@ pip install -e ".[dev]"
 If you see `ModuleNotFoundError: No module named 'dotenv'`, it means dependencies have not been installed; rerun one of the above commands.
 
 Two logical suites keep the feedback loop short:
-- **Unit tests** (default): `uv run pytest` – fast checks that validate config parsing and helper utilities.
-- **Integration tests** (hit Google Ads API): `uv run pytest -m integration`
+- **Unit tests** (default): `pytest` – works after activating `.venv` once (editable install makes edits live).
+- **Integration tests** (hit Google Ads API): `pytest -m integration`
 
 Pytest automatically loads `.env` and, if present, overlays `.env.test`. The integration test in `tests/integration/test_google_ads_api.py` builds a Google Ads client using the `TEST_GOOGLE_ADS_*` environment variables defined in `.env.test` and calls `CustomerService.list_accessible_customers`. A passing run proves that OAuth credentials, developer token, and account permissions are all wired correctly.
 
@@ -92,3 +97,26 @@ See `database/README.md` for the proposed two-layer approach (raw object store +
 - Flesh out Google Ads extractors with batching, partition checkpointing, and schema-aware loading.
 - Add orchestration (Prefect, Dagster, Airflow) and wire to the CLI commands.
 - Introduce proper secret management (Vault, SOPS, AWS/GCP Secret Manager) and integrate with the Ansible roles.
+# Quickstart (Canonical Workflow)
+
+### One-time setup
+```bash
+git clone <repo>
+cd gads-etl
+uv venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+### Daily dev loop
+```bash
+python -m pytest
+gads-etl daily
+./scripts/dev_check.sh
+```
+
+> **Important**
+> - Do **not** use `uv run`.
+> - Always activate `.venv` and run tools inside it.
+> - Always use `python -m pytest` (never bare `pytest`).
+> - Editable install is required; do not rely on local path imports.

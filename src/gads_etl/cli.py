@@ -21,8 +21,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = typer.Typer(help="Google Ads ETL controller")
-state_app = typer.Typer(help="State inspection commands")
+state_app = typer.Typer(help="State commands")
 app.add_typer(state_app, name="state")
+state_backfill_app = typer.Typer(help="Backfill control-plane commands")
+state_app.add_typer(state_backfill_app, name="backfill")
 consumer_app = typer.Typer(help="Read-only consumer helpers")
 app.add_typer(consumer_app, name="consume")
 retry_threshold = 20
@@ -309,7 +311,7 @@ def state_mark_terminal(
         raise typer.Exit(code=1)
 
 
-@state_app.command("backfill")
+@state_backfill_app.command("enqueue")
 def state_backfill_enqueue(
     customer_id: str = typer.Option(..., "--customer-id"),
     query_name: str = typer.Option(..., "--query-name"),
