@@ -1,0 +1,13 @@
+# System overview: source to consumers
+Source: "Google Ads API"
+Extractor: Extractor
+Raw: "Raw Sink (filesystem/S3)"
+Validator: Validator
+State: "PartitionState"
+Consumers: "Consumers/Warehouse"
+
+Source -> Extractor: "GAQL streaming"
+Extractor -> Raw: "write immutable partitions"
+Raw -> Validator: "validate + compute metadata"
+Validator -> State: "status=success/failed"
+State -> Consumers: "success partitions only"

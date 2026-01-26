@@ -7,7 +7,7 @@ Consumers are downstream systems (analytics tools, warehouses, dashboards) that 
 The state store (PartitionState) is the sole source of truth for authoritative data. A consumer must consult PartitionState to determine which `(source, customer_id, query_name, logical_date)` partitions are safe (`status=success`) and which run_id is selected.
 
 ## Partition discovery
-Consumers enumerate logical partitions via the state store. Filters such as customer, date, query, or status are applied against PartitionState; raw directories are never scanned blindly. Missing state entries imply `pending` work and must not be read.
+Consumers enumerate logical partitions via the state store (see `docs/diagrams/system_overview.d2`). Filters such as customer, date, query, or status are applied against PartitionState; raw directories are never scanned blindly. Missing state entries imply `pending` work and must not be read.
 
 ## Authority rules
 - Only partitions marked `status=success` are authoritative.  

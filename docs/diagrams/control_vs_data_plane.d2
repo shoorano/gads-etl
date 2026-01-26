@@ -1,0 +1,22 @@
+# Control plane vs data plane
+ControlPlane: {
+    label: "Control Plane"
+    RetryCmd: "state retry"
+    BackfillCmd: "state backfill"
+    TerminalCmd: "state mark-terminal"
+}
+
+DataPlane: {
+    label: "Data Plane"
+    Extractor: Extractor
+    RawSink: "Raw Sink"
+    Validator: Validator
+    State: "PartitionState"
+}
+
+ControlPlane.RetryCmd -> DataPlane.State: "failed -> pending"
+ControlPlane.BackfillCmd -> DataPlane.State: "enqueue pending"
+ControlPlane.TerminalCmd -> DataPlane.State: "mark terminal"
+
+DataPlane.Extractor -> DataPlane.RawSink -> DataPlane.Validator -> DataPlane.State
+DataPlane.State -> Consumers: "success partitions"

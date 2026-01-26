@@ -1,0 +1,11 @@
+# Timeline for a single logical partition
+Extractor: Extractor
+RawStorage: "Raw Sink (immutable partition)"
+Validator: Validator
+State: "PartitionState (authority)"
+Consumer: Consumer
+
+Extractor -> RawStorage: "write run_id payload + seal metadata"
+RawStorage -> Validator: "validator reads payload"
+Validator -> State: "status=success or failed"
+State -> Consumer: "status=success triggers ingestion"
